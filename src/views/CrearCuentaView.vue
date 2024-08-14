@@ -17,11 +17,13 @@
                         </v-row>
                     </v-form>
 
-                    <ConfirmDialog 
-                        v-model="showDialog" 
-                        title="Confirmar Creación de Cuenta"
-                        message="¿Seguro que quiere crear la cuenta?" 
-                        :onConfirm="crearCuenta" />
+                    <!-- COMPONENTE DE ALERTA -->
+                    <Alerta v-if="mensajeAlerta" :message="mensajeAlerta" :type="TypeAlerta" :visible="VisibleAlerta" />
+
+                    <!-- COMPONENTE DE DIÁLOGO -->
+
+                    <ConfirmDialog v-model="showDialog" title="Confirmar Creación de Cuenta"
+                        message="¿Seguro que quiere crear la cuenta?" :onConfirm="crearCuenta" />
                 </v-card>
             </v-col>
         </v-row>
@@ -30,11 +32,13 @@
 
 <script>
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
+import Alerta from '@/components/Alerta.vue';
 import axios from 'axios';
 
 export default {
     components: {
-        ConfirmDialog
+        ConfirmDialog,
+        Alerta
     },
     data() {
         return {
@@ -44,6 +48,9 @@ export default {
             contraseña: '',
             showDialog: false,
             error: null,
+            mensajeAlerta: '',
+            TypeAlerta: 'success',
+            VisibleAlerta: false,
         };
     },
     methods: {
@@ -61,15 +68,30 @@ export default {
                 if (response.data.success) {
                     console.log('Usuario creado:', response.data.usuario);
                     console.log('Cuenta creada exitosamente, redirigiendo...');
-                    this.$router.push('/');
+                    this.mensajeAlerta = 'Cuenta creada exitosamente.';
+                    this.TypeAlerta = 'success';
+                    this.VisibleAlerta = true;
+                    setTimeout(() => {
+                        this.$router.push('/');
+                    }, 3000);
                 } else {
-                    this.error = response.data.message;
+                    this.mensajeAlerta = response.data.message || 'Error al crear la cuenta. Intente de nuevo.';
+                    this.TypeAlerta = 'error';
+                    this.VisibleAlerta = true;
                 }
 
             } catch (error) {
-                this.error = 'Error al crear la cuenta. Intente de nuevo.';
+                this.mensajeAlerta = 'Error al crear la cuenta. Intente de nuevo.';
+                this.TypeAlerta = 'error';
+                this.VisibleAlerta = true;
             }
         }
     }
 };
 </script>
+
+<style scoped>
+.v-card {
+    margin-top: 20px;
+}
+</style>
